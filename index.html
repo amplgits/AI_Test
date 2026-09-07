@@ -1202,7 +1202,13 @@ const PWA = {
   deferredPrompt: null,
   init() {
     this.registerManifest();
-    this.registerServiceWorker();
+    // No service worker: browsers refuse to register one from a blob: URL
+    // (only same-origin http/https script files are allowed), and that's the
+    // only option available while keeping everything in this single HTML
+    // file. Not a problem for installability — Chrome/Edge's install prompt
+    // works off the manifest alone. The only thing genuinely lost is offline
+    // support, which wouldn't help here anyway since every screen depends on
+    // live calls to Apps Script, Firebase, and OpenAI.
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       this.deferredPrompt = e;
@@ -1230,16 +1236,6 @@ const PWA = {
     };
     const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
     UTILS.qs('#pwaManifestLink').setAttribute('href', URL.createObjectURL(blob));
-  },
-  registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
-    const swCode = `
-      self.addEventListener('install', e => self.skipWaiting());
-      self.addEventListener('activate', e => self.clients.claim());
-      self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(err => handleError('serviceWorker.register', err));
   },
   async promptInstall() {
     if (!this.deferredPrompt) {
