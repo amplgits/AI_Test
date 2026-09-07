@@ -338,16 +338,8 @@ tbody tr{cursor:pointer;transition:background .12s;} tbody tr:hover{background:#
   </div>
 </section>
 
-<div id="cameraModal" class="camera-modal hidden">
-  <video id="cameraVideo" autoplay playsinline muted></video>
-  <div class="camera-controls">
-    <button class="cam-side-btn" onclick="Camera.close()">Cancel</button>
-    <button class="shutter-btn" onclick="Camera.capture()" aria-label="Capture"></button>
-    <div style="width:70px;"></div>
-  </div>
-</div>
+<input type="file" id="cameraFileInput" accept="image/*" capture="environment" class="hidden" onchange="Camera.handleFile(this.files[0])" />
 <canvas id="captureCanvas" class="hidden"></canvas>
-<canvas id="qualityCanvas" class="hidden"></canvas>
 
 <!-- ============================== ADMIN LOGIN ============================== -->
 <section id="view-admin-login" class="view hidden centered-shell">
@@ -540,30 +532,33 @@ const API = {
 };
 
 /* ============================================================================ CAMERA */
+/* Opens the phone's actual camera app via a file input with capture="environment"
+   — far more reliable across devices than an in-page getUserMedia video feed,
+   and gives the user real camera controls (focus, zoom, flash). */
 const Camera = {
-  stream: null,
-  async open() {
-    UTILS.qs('#cameraModal').classList.remove('hidden');
-    try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
-      UTILS.qs('#cameraVideo').srcObject = this.stream;
-    } catch (err) {
-      UI.toast('Camera access was unavailable. Please check browser permissions.', 'error');
-      this.close();
-    }
+  open() {
+    const input = UTILS.qs('#cameraFileInput');
+    input.value = ''; // clears any previous selection so re-taking the same shot still fires onchange
+    input.click();
   },
-  close() { if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } UTILS.qs('#cameraModal').classList.add('hidden'); },
-  capture() {
-    const video = UTILS.qs('#cameraVideo');
-    const canvas = UTILS.qs('#captureCanvas');
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    this.close();
-    ImageProcessor.compress(canvas).then(({ dataUrl, base64 }) => {
-      Evaluation.pendingImage = { dataUrl, base64 };
-      const quality = ImageProcessor.assessQuality(canvas);
-      RecruiterFlow.renderCapturePreview(dataUrl, quality);
-    });
+  handleFile(file) {
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = UTILS.qs('#captureCanvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      URL.revokeObjectURL(objectUrl);
+      ImageProcessor.compress(canvas).then(({ dataUrl, base64 }) => {
+        Evaluation.pendingImage = { dataUrl, base64 };
+        const quality = ImageProcessor.assessQuality(canvas);
+        RecruiterFlow.renderCapturePreview(dataUrl, quality);
+      });
+    };
+    img.onerror = () => UI.toast('Could not read that photo. Please try again.', 'error');
+    img.src = objectUrl;
   }
 };
 
