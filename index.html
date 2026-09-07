@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Answer Evaluator — AI Assessment Platform</title>
 <link rel="icon" type="image/png" href="https://wingzinfotech.in/img/ampl.jpg">
+<link rel="manifest" id="pwaManifestLink">
+<meta name="theme-color" content="#4F46E5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Answer Evaluator">
+<link rel="apple-touch-icon" href="https://wingzinfotech.in/img/ampl.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -202,6 +209,7 @@ tbody tr{cursor:pointer;transition:background .12s;} tbody tr:hover{background:#
 <body>
 
 <div id="toastContainer" class="toast-container"></div>
+<button id="installAppBtn" class="btn btn-primary hidden" style="position:fixed;top:16px;left:16px;width:auto;padding:10px 18px;z-index:300;" onclick="PWA.promptInstall()">⬇ Install App</button>
 
 <!-- ============================== LANDING ============================== -->
 <section id="view-landing" class="view centered-shell">
@@ -1186,6 +1194,65 @@ const Reports = {
 };
 
 /* ============================================================================ BOOT */
+/* ============================================================================ PWA_INSTALL
+   Generates a manifest and a service worker entirely in-memory (Blob URLs) so
+   the app can be installed as a standalone app straight from the browser —
+   no separate manifest.json or sw.js files needed. */
+const PWA = {
+  deferredPrompt: null,
+  init() {
+    this.registerManifest();
+    this.registerServiceWorker();
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      UTILS.qs('#installAppBtn').classList.remove('hidden');
+    });
+    window.addEventListener('appinstalled', () => {
+      UTILS.qs('#installAppBtn').classList.add('hidden');
+      UI.toast('App installed.', 'success');
+    });
+  },
+  registerManifest() {
+    const baseUrl = location.origin + location.pathname;
+    const manifest = {
+      name: CONFIG.APP_NAME + ' — Answer Evaluator',
+      short_name: CONFIG.APP_NAME,
+      start_url: baseUrl,
+      scope: baseUrl,
+      display: 'standalone',
+      background_color: '#F6F7FC',
+      theme_color: '#4F46E5',
+      icons: [
+        { src: 'https://wingzinfotech.in/img/ampl.jpg', sizes: '192x192', type: 'image/jpeg' },
+        { src: 'https://wingzinfotech.in/img/ampl.jpg', sizes: '512x512', type: 'image/jpeg' }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    UTILS.qs('#pwaManifestLink').setAttribute('href', URL.createObjectURL(blob));
+  },
+  registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(() => caches.match(e.request))); });
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(err => handleError('serviceWorker.register', err));
+  },
+  async promptInstall() {
+    if (!this.deferredPrompt) {
+      UI.toast('Use your browser menu → "Add to Home screen" / "Install app" instead.', 'error');
+      return;
+    }
+    this.deferredPrompt.prompt();
+    await this.deferredPrompt.userChoice;
+    this.deferredPrompt = null;
+    UTILS.qs('#installAppBtn').classList.add('hidden');
+  }
+};
+PWA.init();
 (function initializeApp() {
   // A stored admin token doesn't guarantee it's still valid server-side — the
   // first failed admin call bounces the user back to login via the API layer.
