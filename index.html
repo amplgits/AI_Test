@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Answer Evaluator — AI Assessment Platform</title>
+<link rel="icon" type="image/png" href="https://wingzinfotech.in/img/ampl.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   TOKENS
+   ========================================================================== */
+:root{
+  --bg:#F6F7FC; --surface:#FFFFFF; --surface-2:#F0F1F8; --border:#E4E6F1;
+  --text:#211E33; --text-soft:#65627D; --text-faint:#9694AC;
+  --grad-primary:linear-gradient(135deg,#4F46E5 0%,#9333EA 100%);
+  --grad-cyan:linear-gradient(135deg,#06B6D4 0%,#3B82F6 100%);
+  --grad-pink:linear-gradient(135deg,#A855F7 0%,#EC4899 100%);
+  --grad-teal:linear-gradient(135deg,#14B8A6 0%,#2563EB 100%);
+  --grad-amber:linear-gradient(135deg,#F59E0B 0%,#EF4444 100%);
+  --success:#10B981; --warning:#F59E0B; --danger:#EF4444;
+  --radius-sm:10px; --radius-md:16px; --radius-lg:24px;
+  --shadow-sm:0 1px 2px rgba(33,30,51,.06), 0 1px 1px rgba(33,30,51,.04);
+  --shadow-md:0 8px 24px -8px rgba(79,70,229,.18);
+  --shadow-lg:0 20px 48px -12px rgba(79,70,229,.25);
+  --font-head:'Lexend',sans-serif; --font-body:'Inter',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;min-height:100vh;}
+h1,h2,h3,h4{font-family:var(--font-head);margin:0;letter-spacing:-0.01em;}
+p{margin:0;} button{font-family:inherit;cursor:pointer;} input,select,textarea{font-family:inherit;}
+img{max-width:100%;display:block;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;}}
+.hidden{display:none !important;}
+.view{min-height:100vh;width:100%;}
+.centered-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(1200px 600px at 15% -10%, rgba(147,51,234,.10), transparent 60%),
+             radial-gradient(1000px 500px at 110% 10%, rgba(6,182,212,.10), transparent 55%), var(--bg);}
+.narrow{max-width:480px;width:100%;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);}
+.pad-lg{padding:32px;} .pad-md{padding:24px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:var(--radius-sm);
+  padding:14px 22px;font-size:15px;font-weight:600;transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;}
+.btn:active{transform:scale(.97);} .btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.btn-primary{background:var(--grad-primary);color:#fff;box-shadow:var(--shadow-md);width:100%;}
+.btn-primary:hover:not(:disabled){box-shadow:var(--shadow-lg);}
+.btn-ghost{background:var(--surface-2);color:var(--text);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+.btn-sm{padding:9px 14px;font-size:13px;border-radius:9px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text-soft);margin-bottom:7px;}
+.field input, .field select, .field textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:12px;
+  font-size:15px;color:var(--text);background:#fff;transition:border-color .15s, box-shadow .15s;}
+.field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:#818CF8;box-shadow:0 0 0 4px rgba(129,140,248,.15);}
+.field textarea{resize:vertical;min-height:80px;}
+.hint{font-size:12.5px;color:var(--text-faint);margin-top:6px;}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+.badge-green{background:#D1FAE5;color:#047857;} .badge-amber{background:#FEF3C7;color:#B45309;}
+.badge-red{background:#FEE2E2;color:#B91C1C;} .badge-purple{background:#EDE9FE;color:#6D28D9;} .badge-gray{background:#EEF0F7;color:#5B5876;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:480px){.two-col{grid-template-columns:1fr;}}
+
+/* landing */
+.landing-eyebrow{color:var(--text-faint);font-size:14px;margin-bottom:10px;}
+.landing-title{font-size:32px;font-weight:800;margin-bottom:10px;}
+.landing-sub{color:var(--text-soft);font-size:15px;margin-bottom:32px;line-height:1.5;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:520px){.role-grid{grid-template-columns:1fr;}}
+.role-tile{cursor:pointer;border:1.5px solid var(--border);border-radius:var(--radius-md);padding:26px 20px;background:#fff;
+  text-align:left;transition:transform .15s, box-shadow .15s, border-color .15s;}
+.role-tile:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:transparent;}
+.role-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;margin-bottom:16px;}
+.role-tile h3{font-size:17px;margin-bottom:6px;} .role-tile p{font-size:13.5px;color:var(--text-soft);line-height:1.5;}
+
+/* recruiter */
+.recruiter-shell{max-width:560px;margin:0 auto;padding:20px 18px 60px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 4px 22px;}
+.topbar .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:16px;}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--grad-primary);}
+.link-btn{background:none;border:none;color:var(--text-soft);font-size:13.5px;font-weight:600;}
+.step-pips{display:flex;gap:6px;margin-bottom:20px;}
+.step-pips span{height:5px;flex:1;border-radius:99px;background:var(--surface-2);}
+.step-pips span.done{background:var(--grad-primary);}
+.candidate-chip{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:14px;padding:10px 14px;margin-bottom:18px;font-size:13.5px;}
+.candidate-chip .avatar{width:34px;height:34px;border-radius:10px;background:var(--grad-cyan);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+
+.search-row{display:flex;gap:8px;margin-bottom:14px;}
+.search-row input{flex:1;}
+.question-list{display:flex;flex-direction:column;gap:10px;max-height:360px;overflow-y:auto;margin-bottom:8px;}
+.question-item{border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:border-color .15s, background .15s;}
+.question-item:hover{border-color:#C7C2E8;background:#FBFAFF;}
+.question-item .qi-cat{font-size:11px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.question-item .qi-text{font-size:14px;line-height:1.5;}
+.pagination-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--text-soft);margin-bottom:16px;}
+
+.question-box{border-radius:var(--radius-md);padding:18px 20px;margin:6px 0 24px;background:linear-gradient(180deg,#FBFAFF, #F5F3FF);border:1px solid #E9E5FC;}
+.question-box .qcat{font-size:12px;font-weight:700;color:#7C3AED;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;}
+.question-box .qtext{font-size:16px;line-height:1.5;font-weight:500;}
+
+.capture-zone{border:2px dashed #C7C2E8;border-radius:var(--radius-md);padding:36px 20px;text-align:center;background:#FBFBFE;margin-bottom:20px;}
+.capture-zone .cam-icon{width:56px;height:56px;border-radius:16px;background:var(--grad-primary);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;}
+.capture-zone p{color:var(--text-soft);font-size:13.5px;margin-bottom:16px;}
+.preview-wrap{border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border);margin-bottom:16px;}
+.preview-wrap img{width:100%;display:block;}
+.retake-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.quality-warning{background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;padding:14px 16px;font-size:13px;color:#92400E;margin-bottom:16px;line-height:1.5;}
+.quality-warning ul{margin:8px 0 0;padding-left:18px;}
+
+.camera-modal{position:fixed;inset:0;background:#0B0A14;z-index:200;display:flex;flex-direction:column;}
+.camera-modal video{flex:1;width:100%;object-fit:cover;background:#000;}
+.camera-controls{padding:22px 20px calc(22px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:space-between;background:#0B0A14;}
+.shutter-btn{width:70px;height:70px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);}
+.cam-side-btn{background:rgba(255,255,255,.12);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;}
+
+.progress-steps{list-style:none;margin:0 0 8px;padding:0;}
+.progress-steps li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:14px;color:var(--text-faint);}
+.progress-steps li .dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.progress-steps li.active{color:var(--text);} .progress-steps li.active .dot{border-color:#818CF8;box-shadow:0 0 0 4px rgba(129,140,248,.15);}
+.progress-steps li.done{color:var(--text);} .progress-steps li.done .dot{background:var(--success);border-color:var(--success);color:#fff;}
+
+.score-ring-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 0 22px;}
+.result-summary{font-size:14.5px;color:var(--text-soft);line-height:1.6;text-align:center;margin-bottom:22px;padding:0 6px;}
+.result-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.footer-note{text-align:center;color:var(--text-faint);font-size:12px;margin-top:26px;}
+
+/* admin login */
+.admin-login-card{max-width:400px;}
+.admin-login-icon{width:52px;height:52px;border-radius:15px;background:var(--grad-primary);margin:0 auto 18px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;}
+
+/* admin shell */
+.admin-shell{display:flex;min-height:100vh;}
+.sidebar{width:230px;flex-shrink:0;background:#fff;border-right:1px solid var(--border);padding:22px 16px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.sidebar .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:700;font-size:15px;padding:0 8px 26px;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;font-size:14px;font-weight:600;color:var(--text-soft);border:none;background:none;width:100%;text-align:left;margin-bottom:4px;}
+.nav-item.active{background:var(--surface-2);color:var(--text);}
+.nav-item .nav-ico{width:18px;text-align:center;}
+.sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.admin-main{flex:1;padding:26px 30px 60px;max-width:100%;overflow-x:hidden;}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.admin-header h2{font-size:22px;}
+@media (max-width:860px){
+  .sidebar{position:fixed;bottom:0;left:0;right:0;top:auto;width:100%;height:auto;flex-direction:row;justify-content:space-around;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom));border-right:none;border-top:1px solid var(--border);z-index:50;}
+  .sidebar .brand,.sidebar-foot{display:none;}
+  .nav-item{flex-direction:column;font-size:10.5px;gap:4px;padding:8px 6px;}
+  .admin-main{padding:20px 16px 90px;}
+}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px;}
+@media (max-width:1000px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:520px){.kpi-grid{grid-template-columns:1fr 1fr;gap:10px;}}
+.kpi-card{border-radius:var(--radius-md);padding:18px;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);}
+.kpi-card .kpi-label{font-size:12.5px;opacity:.9;font-weight:600;margin-bottom:10px;}
+.kpi-card .kpi-value{font-family:var(--font-head);font-size:26px;font-weight:800;}
+.section-card{margin-bottom:24px;}
+.section-card .section-card-head{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.section-card .section-card-head h3{font-size:16px;}
+.section-card-body{padding:20px 22px;}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-row input,.filter-row select{padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13.5px;background:#fff;}
+.filter-row input[type=text]{flex:1;min-width:180px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+thead th{text-align:left;padding:10px 12px;color:var(--text-faint);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody td{padding:13px 12px;border-bottom:1px solid #F0F0F7;vertical-align:middle;}
+tbody tr{cursor:pointer;transition:background .12s;} tbody tr:hover{background:#FAFAFE;}
+.table-scroll{overflow-x:auto;}
+.empty-state{padding:50px 20px;text-align:center;color:var(--text-faint);}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;font-size:13px;color:var(--text-soft);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(20,18,35,.55);display:flex;align-items:flex-start;justify-content:center;padding:26px;overflow-y:auto;z-index:150;}
+.modal-panel{background:#fff;border-radius:var(--radius-lg);max-width:840px;width:100%;box-shadow:var(--shadow-lg);margin:20px 0;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1px solid var(--border);}
+.modal-body{padding:26px;}
+.modal-close{background:var(--surface-2);border:none;width:32px;height:32px;border-radius:9px;font-size:16px;color:var(--text-soft);}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:22px;}
+@media (max-width:640px){.detail-grid{grid-template-columns:1fr 1fr;}}
+.detail-label{font-size:11.5px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.detail-value{font-size:14.5px;font-weight:500;}
+.answer-block{background:var(--surface-2);border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.6;margin-bottom:14px;white-space:pre-wrap;}
+.score-bars{display:flex;flex-direction:column;gap:12px;margin:16px 0;}
+.score-bar-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;font-size:13px;}
+.score-bar-track{height:8px;background:#EEF0F7;border-radius:99px;overflow:hidden;}
+.score-bar-fill{height:100%;border-radius:99px;background:var(--grad-primary);}
+.concept-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+.qcard{border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px;}
+.qcard-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+.review-panel{background:var(--surface-2);border-radius:14px;padding:16px;margin-top:14px;}
+.review-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+@media (max-width:520px){.review-row{grid-template-columns:1fr;}}
+
+.toast-container{position:fixed;top:18px;right:18px;z-index:400;display:flex;flex-direction:column;gap:10px;}
+.toast{background:#211E33;color:#fff;padding:13px 18px;border-radius:12px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);max-width:320px;animation:toastIn .2s ease;}
+.toast.success{background:#065F46;} .toast.error{background:#7F1D1D;}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.skeleton{background:linear-gradient(90deg,#EEF0F7 25%,#F6F6FB 37%,#EEF0F7 63%);background-size:400% 100%;animation:sk 1.4s ease infinite;border-radius:8px;}
+@keyframes sk{0%{background-position:100% 50%}100%{background-position:0 50%}}
+</style>
+</head>
+<body>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- ============================== LANDING ============================== -->
+<section id="view-landing" class="view centered-shell">
+  <div class="narrow">
+    <p class="landing-eyebrow">Assessment Platform</p>
+    <h1 class="landing-title">Handwritten Answer Evaluator</h1>
+    <p class="landing-sub">Capture a candidate's handwritten response and let AI score it for meaning and concept coverage — not just wording.</p>
+    <div class="role-grid">
+      <button class="role-tile" onclick="UI.showView('view-recruiter'); Recruiter.init();">
+        <div class="role-icon" style="background:var(--grad-primary);">📝</div>
+        <h3>Recruiter</h3>
+        <p>Register a candidate and capture their answers.</p>
+      </button>
+      <button class="role-tile" onclick="UI.showView('view-admin-login');">
+        <div class="role-icon" style="background:var(--grad-cyan);">📊</div>
+        <h3>Administrator</h3>
+        <p>Review candidate reports, scores and AI findings.</p>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== RECRUITER ============================== -->
+<section id="view-recruiter" class="view hidden">
+  <div class="recruiter-shell">
+    <div class="topbar">
+      <div class="brand"><span class="brand-mark"></span>Assessment Platform</div>
+      <button class="link-btn" onclick="Recruiter.exit()">Exit</button>
+    </div>
+    <div class="step-pips"><span id="pip1"></span><span id="pip2"></span><span id="pip3"></span></div>
+
+    <!-- Step 1: candidate -->
+    <div id="stepCandidate">
+      <div class="card pad-lg">
+        <h3 style="margin-bottom:18px;font-size:17px;">Candidate</h3>
+        <div class="field"><label>Candidate ID <span style="font-weight:400;color:var(--text-faint);">(leave blank if new)</span></label><input id="cCandidateId" type="text" placeholder="Existing candidate ID, if any" /></div>
+        <div class="field"><label>Candidate Name</label><input id="cName" type="text" placeholder="e.g. Anita Sharma" /></div>
+        <div class="two-col">
+          <div class="field"><label>Email</label><input id="cEmail" type="email" placeholder="optional" /></div>
+          <div class="field"><label>Phone</label><input id="cPhone" type="tel" placeholder="optional" /></div>
+        </div>
+        <div class="two-col">
+          <div class="field"><label>Position</label><input id="cPosition" type="text" placeholder="e.g. Mining Overman" /></div>
+          <div class="field"><label>Department</label><input id="cDepartment" type="text" placeholder="optional" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="RecruiterFlow.confirmCandidate()">Continue</button>
+      </div>
+    </div>
+
+    <!-- Step 2: question search + capture -->
+    <div id="stepQuestion" class="hidden">
+      <div class="candidate-chip" id="candidateChip"></div>
+
+      <div id="questionSearchPanel">
+        <div class="card pad-lg">
+          <h3 style="margin-bottom:14px;font-size:17px;">Select a Question</h3>
+          <div class="search-row">
+            <input id="qSearch" type="text" placeholder="Search questions…" oninput="RecruiterFlow.debouncedSearch()" />
+            <select id="qCategoryFilter" onchange="RecruiterFlow.searchQuestions(1)"><option value="">All categories</option></select>
+          </div>
+          <div id="questionList" class="question-list"></div>
+          <div class="pagination-row" id="questionPager"></div>
+        </div>
+      </div>
+
+      <div id="questionCapturePanel" class="hidden">
+        <div class="card pad-lg">
+          <button class="link-btn" style="margin-bottom:14px;" onclick="RecruiterFlow.backToQuestionSearch()">← Choose a different question</button>
+          <div class="question-box">
+            <div class="qcat" id="selQuestionCat"></div>
+            <div class="qtext" id="selQuestionText"></div>
+          </div>
+
+          <div id="captureZoneWrap">
+            <div class="capture-zone">
+              <div class="cam-icon">📷</div>
+              <p>Place the handwritten answer inside the frame, in good light.</p>
+              <button class="btn btn-primary" style="width:auto;padding:12px 24px;" onclick="Camera.open()">Open Camera</button>
+            </div>
+          </div>
+
+          <div id="qualityWarning" class="quality-warning hidden"></div>
+
+          <div id="previewWrap" class="hidden">
+            <div class="preview-wrap"><img id="previewImg" alt="Captured answer" /></div>
+            <div class="retake-row">
+              <button class="btn btn-outline" onclick="Camera.open()">Retake</button>
+              <button class="btn btn-ghost" onclick="Evaluation.confirmPhoto()">Use Photo ✓</button>
+            </div>
+          </div>
+
+          <button id="submitBtn" class="btn btn-primary" disabled onclick="Evaluation.submit()">Submit for Evaluation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: processing -->
+    <div id="stepProcessing" class="hidden">
+      <div class="card pad-lg">
+        <h3 style="margin-bottom:18px;">Analyzing Answer…</h3>
+        <ul class="progress-steps" id="processingSteps">
+          <li data-step="0"><span class="dot">•</span> Uploading image</li>
+          <li data-step="1"><span class="dot">•</span> Reading handwriting (OCR)</li>
+          <li data-step="2"><span class="dot">•</span> Comparing with reference answer</li>
+          <li data-step="3"><span class="dot">•</span> Calculating score</li>
+          <li data-step="4"><span class="dot">•</span> Saving to records</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Step 3b: result -->
+    <div id="stepResult" class="hidden">
+      <div class="card pad-lg">
+        <div class="score-ring-wrap"><div id="scoreRingHost"></div></div>
+        <p style="text-align:center;font-weight:700;font-size:15px;margin-bottom:6px;" id="resultVerdict"></p>
+        <p class="result-summary" id="resultSummary"></p>
+        <div id="resultStatusBadge" style="text-align:center;margin-bottom:18px;"></div>
+        <div class="result-actions">
+          <button class="btn btn-outline" onclick="RecruiterFlow.answerAnother()">Answer Another Question</button>
+          <button class="btn btn-primary" onclick="Recruiter.init()">Finish Candidate</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="footer-note">Scores reflect meaning and concept coverage as judged by AI, with results always available for recruiter and admin review.</p>
+  </div>
+</section>
+
+<div id="cameraModal" class="camera-modal hidden">
+  <video id="cameraVideo" autoplay playsinline muted></video>
+  <div class="camera-controls">
+    <button class="cam-side-btn" onclick="Camera.close()">Cancel</button>
+    <button class="shutter-btn" onclick="Camera.capture()" aria-label="Capture"></button>
+    <div style="width:70px;"></div>
+  </div>
+</div>
+<canvas id="captureCanvas" class="hidden"></canvas>
+<canvas id="qualityCanvas" class="hidden"></canvas>
+
+<!-- ============================== ADMIN LOGIN ============================== -->
+<section id="view-admin-login" class="view hidden centered-shell">
+  <div class="card pad-lg narrow admin-login-card">
+    <div class="admin-login-icon">🔐</div>
+    <h2 style="text-align:center;font-size:20px;margin-bottom:6px;">Administrator Login</h2>
+    <p style="text-align:center;color:var(--text-soft);font-size:13.5px;margin-bottom:26px;">Sign in to review candidate assessments and reports.</p>
+    <div class="field"><label>User ID</label><input id="adminUserId" type="text" autocomplete="username" /></div>
+    <div class="field"><label>Password</label><input id="adminPassword" type="password" autocomplete="current-password" /></div>
+    <button class="btn btn-primary" id="adminLoginBtn" onclick="Auth.login()">Log In</button>
+    <button class="link-btn" style="display:block;margin:16px auto 0;" onclick="UI.showView('view-landing')">← Back</button>
+  </div>
+</section>
+
+<!-- ============================== ADMIN SHELL ============================== -->
+<section id="view-admin" class="view hidden">
+  <div class="admin-shell">
+    <nav class="sidebar">
+      <div class="brand"><span class="brand-mark"></span>Admin</div>
+      <button class="nav-item active" data-tab="overview" onclick="AdminNav.go('overview')"><span class="nav-ico">📊</span>Overview</button>
+      <button class="nav-item" data-tab="candidates" onclick="AdminNav.go('candidates')"><span class="nav-ico">👥</span>Candidates</button>
+      <button class="nav-item" data-tab="questions" onclick="AdminNav.go('questions')"><span class="nav-ico">🗂️</span>Questions</button>
+      <div class="sidebar-foot"><button class="nav-item" onclick="Auth.logout()"><span class="nav-ico">⏻</span>Log out</button></div>
+    </nav>
+
+    <main class="admin-main">
+      <div id="tab-overview">
+        <div class="admin-header"><h2>Overview</h2></div>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="card section-card">
+          <div class="section-card-head"><h3>Average score by category</h3></div>
+          <div class="section-card-body"><canvas id="categoryChart" height="160"></canvas></div>
+        </div>
+      </div>
+
+      <div id="tab-candidates" class="hidden">
+        <div class="admin-header"><h2>Candidates</h2></div>
+        <div class="filter-row">
+          <input type="text" id="filterSearch" placeholder="Search by name or candidate ID…" oninput="CandidatesView.debouncedLoad()" />
+          <select id="filterStatus" onchange="CandidatesView.load(1)">
+            <option value="">Any status</option><option>In Progress</option><option>Completed</option>
+          </select>
+          <select id="filterSort" onchange="CandidatesView.load(1)">
+            <option value="assessmentDate">Sort: Most recent</option>
+            <option value="averageScore">Sort: Score</option>
+            <option value="name">Sort: Name</option>
+          </select>
+        </div>
+        <div class="card section-card">
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Candidate</th><th>Position</th><th>Questions</th><th>Avg Score</th><th>AI Likelihood</th><th>Verdict</th><th>Date</th></tr></thead>
+              <tbody id="candidatesTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="candidatesPager"></div>
+        </div>
+      </div>
+
+      <div id="tab-questions" class="hidden">
+        <div class="admin-header">
+          <h2>Question Bank</h2>
+          <button class="btn btn-ghost btn-sm" onclick="QuestionsAdmin.openAddForm()">+ Add Question</button>
+        </div>
+        <div id="addQuestionForm" class="card pad-md hidden" style="margin-bottom:20px;">
+          <div class="two-col">
+            <div class="field"><label>Category</label><input id="qCategory" type="text" placeholder="e.g. Personality" /></div>
+            <div class="field"><label>Difficulty</label><input id="qDifficulty" type="text" placeholder="Easy / Medium / Hard" /></div>
+          </div>
+          <div class="field"><label>Question</label><textarea id="qQuestion" placeholder="Enter the interview question"></textarea></div>
+          <div class="field"><label>Reference Answer</label><textarea id="qReferenceAnswer" placeholder="The ideal / benchmark answer"></textarea></div>
+          <div class="field"><label>Key Concepts <span style="font-weight:400;color:var(--text-faint);">(comma-separated)</span></label><input id="qKeyConcepts" type="text" placeholder="communication, accountability, decision-making" /></div>
+          <div class="field"><label>Critical Concepts <span style="font-weight:400;color:var(--text-faint);">(subset of the above that must be present)</span></label><input id="qCriticalConcepts" type="text" placeholder="communication, accountability" /></div>
+          <div class="field"><label>Evaluation Criteria <span style="font-weight:400;color:var(--text-faint);">(optional guidance for the AI)</span></label><textarea id="qEvalCriteria" placeholder="Optional notes on how to judge this question"></textarea></div>
+          <div class="field" style="max-width:160px;"><label>Maximum Score</label><input id="qMaxScore" type="number" value="100" /></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" style="width:auto;padding:11px 20px;" onclick="QuestionsAdmin.save()">Save Question</button>
+            <button class="btn btn-outline" onclick="QuestionsAdmin.closeAddForm()">Cancel</button>
+          </div>
+        </div>
+        <div class="filter-row"><input type="text" id="qAdminSearch" placeholder="Filter loaded questions…" oninput="QuestionsAdmin.render()" /></div>
+        <div class="card section-card">
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>Question</th><th>Category</th><th>Max Score</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="questionsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<div id="detailModal" class="modal-overlay hidden" onclick="if(event.target===this) DetailModal.close()">
+  <div class="modal-panel">
+    <div class="modal-head"><h3 id="detailModalTitle">Candidate Report</h3><button class="modal-close" onclick="DetailModal.close()">✕</button></div>
+    <div class="modal-body" id="detailModalBody"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script>
+'use strict';
+
+/* ============================================================================ CONFIG */
+const CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxjJYlZIo_Zelkmq1RxmRrv9Nkf99JWl8I0vaMxLstSYg3wF-POzuVUVualMSSv7tEafQ/exec',
+  APP_NAME: 'AMPLs',
+  MAX_IMAGE_SIZE_MB: 5,
+  MAX_IMAGE_DIMENSION: 1280,
+  IMAGE_QUALITY: 0.72,
+  RECRUITER_ID: 'default-recruiter', // replace with a real recruiter login/id if you add one
+  // Firebase web config — copy this from Firebase Console → Project Settings →
+  // General → Your apps → (Add app → Web, if you haven't already) → SDK setup
+  // and configuration → Config. This is NOT a secret: Firebase's web config is
+  // designed to be public in client code. What actually protects the data is
+  // the Realtime Database Security Rules you set in the Firebase console (see
+  // README.md) — those rules are what limits who can read/write, not hiding
+  // this object. `databaseURL` is required here (unlike a Storage-based setup)
+  // since that's what points the SDK at your Realtime Database instance.
+  FIREBASE_CONFIG: {
+        apiKey: "AIzaSyDxjW93Bb8-se1AYjGfPLzryahb1871RZM",
+        authDomain: "ai-test-6f735.firebaseapp.com",
+        databaseURL: "https://ai-test-6f735-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "ai-test-6f735",
+        appId: "1:774295248554:web:a3df967774a2f91c80bad3"
+    }
+};
+// The image itself still reaches OpenAI only through APPS_SCRIPT_URL (which
+// holds OPENAI_API_KEY server-side) — Firebase here is only ever used for
+// archiving the photo, written straight from this page to the database.
+firebase.initializeApp(CONFIG.FIREBASE_CONFIG);
+const firebaseDb = firebase.database();
+
+/* ============================================================================ UTILS */
+const UTILS = {
+  qs: (sel, root) => (root || document).querySelector(sel),
+  qsa: (sel, root) => Array.from((root || document).querySelectorAll(sel)),
+  escapeHtml(str) { return String(str == null ? '' : str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); },
+  formatDate(v) {
+    if (!v) return '—';
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return String(v);
+    return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  },
+  debounce(fn, wait) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), wait); }; },
+  scoreColor(score) { if (score >= 80) return '#10B981'; if (score >= 50) return '#F59E0B'; return '#EF4444'; }
+};
+
+const UI = {
+  showView(id) { UTILS.qsa('.view').forEach(v => v.classList.add('hidden')); UTILS.qs('#' + id).classList.remove('hidden'); window.scrollTo(0, 0); },
+  toast(message, type) {
+    const el = document.createElement('div');
+    el.className = 'toast' + (type ? ' ' + type : '');
+    el.textContent = message;
+    UTILS.qs('#toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 4200);
+  }
+};
+function handleError(context, err) { console.error(context, err); }
+
+/* ============================================================================ API */
+const API = {
+  async call(action, payload) {
+    if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0) {
+      UI.toast('Backend URL is not configured yet (see CONFIG in index.html).', 'error');
+      throw new Error('not_configured');
+    }
+    try {
+      const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, payload: payload || {} })
+      });
+      const json = await res.json();
+      if (!json.success) { UI.toast(json.message || 'Something went wrong.', 'error'); throw new Error(json.message || 'request_failed'); }
+      return json.data;
+    } catch (err) {
+      if (err.message !== 'request_failed' && err.message !== 'not_configured') {
+        UI.toast('Evaluation service is temporarily unavailable. Please check your connection and try again.', 'error');
+      }
+      handleError('API.call:' + action, err);
+      throw err;
+    }
+  }
+};
+
+/* ============================================================================ CAMERA */
+const Camera = {
+  stream: null,
+  async open() {
+    UTILS.qs('#cameraModal').classList.remove('hidden');
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+      UTILS.qs('#cameraVideo').srcObject = this.stream;
+    } catch (err) {
+      UI.toast('Camera access was unavailable. Please check browser permissions.', 'error');
+      this.close();
+    }
+  },
+  close() { if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; } UTILS.qs('#cameraModal').classList.add('hidden'); },
+  capture() {
+    const video = UTILS.qs('#cameraVideo');
+    const canvas = UTILS.qs('#captureCanvas');
+    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    this.close();
+    ImageProcessor.compress(canvas).then(({ dataUrl, base64 }) => {
+      Evaluation.pendingImage = { dataUrl, base64 };
+      const quality = ImageProcessor.assessQuality(canvas);
+      RecruiterFlow.renderCapturePreview(dataUrl, quality);
+    });
+  }
+};
+
+/* ============================================================================ IMAGE_PROCESSOR
+   Client-side resize/compress + lightweight quality heuristics (blur / darkness /
+   emptiness). These are fast approximations meant to catch obviously unusable
+   photos before upload — not a substitute for the AI's own OCR-confidence signal. */
+const ImageProcessor = {
+  compress(sourceCanvas) {
+    return new Promise(resolve => {
+      const maxDim = CONFIG.MAX_IMAGE_DIMENSION;
+      let { width, height } = sourceCanvas;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale); height = Math.round(height * scale);
+      }
+      const out = document.createElement('canvas');
+      out.width = width; out.height = height;
+      out.getContext('2d').drawImage(sourceCanvas, 0, 0, width, height);
+      const dataUrl = out.toDataURL('image/jpeg', CONFIG.IMAGE_QUALITY);
+      resolve({ dataUrl, base64: dataUrl.split(',')[1] });
+    });
+  },
+  assessQuality(sourceCanvas) {
+    const sample = document.createElement('canvas');
+    const SIZE = 160;
+    sample.width = SIZE; sample.height = SIZE;
+    const ctx = sample.getContext('2d');
+    ctx.drawImage(sourceCanvas, 0, 0, SIZE, SIZE);
+    const { data } = ctx.getImageData(0, 0, SIZE, SIZE);
+
+    const gray = new Float32Array(SIZE * SIZE);
+    let sum = 0;
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+      const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      gray[p] = lum; sum += lum;
+    }
+    const mean = sum / gray.length;
+
+    let variance = 0;
+    for (let p = 0; p < gray.length; p++) variance += (gray[p] - mean) ** 2;
+    variance /= gray.length;
+
+    // Simple edge-energy heuristic (sum of horizontal+vertical gradient magnitude) as a stand-in for sharpness.
+    let edgeEnergy = 0, count = 0;
+    for (let y = 0; y < SIZE - 1; y++) {
+      for (let x = 0; x < SIZE - 1; x++) {
+        const idx = y * SIZE + x;
+        edgeEnergy += Math.abs(gray[idx] - gray[idx + 1]) + Math.abs(gray[idx] - gray[idx + SIZE]);
+        count++;
+      }
+    }
+    const edgeScore = edgeEnergy / count; // higher = sharper
+
+    const warnings = [];
+    if (mean < 45) warnings.push('The photo looks quite dark — try better lighting.');
+    if (mean > 242) warnings.push('The photo looks overexposed — reduce glare or brightness.');
+    if (variance < 60) warnings.push('The frame looks mostly blank — make sure the handwriting fills the frame.');
+    if (edgeScore < 4) warnings.push('The image looks blurry — hold the camera steady and refocus.');
+
+    return { brightness: Math.round(mean), variance: Math.round(variance), edgeScore: Math.round(edgeScore * 10) / 10, warnings };
+  }
+};
+
+/* ============================================================================ FIREBASE_ARCHIVE
+   Writes the captured photo straight from the browser to Firebase Realtime
+   Database, using the Firebase client SDK (no backend involvement). This is
+   purely an archival copy for the admin report — evaluation itself uses the
+   base64 already held in memory and goes through APPS_SCRIPT_URL separately. */
+const FirebaseArchive = {
+  async uploadAnswerImage(candidateId, questionId, base64) {
+    const submissionRef = Math.random().toString(36).slice(2, 10);
+    const path = `answers/${candidateId}/${questionId}/${Date.now()}_${submissionRef}`;
+    await firebaseDb.ref(path).set({
+      imageBase64: base64,
+      contentType: 'image/jpeg',
+      uploadedAt: firebase.database.ServerValue.TIMESTAMP
+    });
+    return path;
+  },
+  async loadAnswerImage(path) {
+    const snap = await firebaseDb.ref(path).once('value');
+    const data = snap.val();
+    return data ? data.imageBase64 : null;
+  }
+};
+
+/* ============================================================================ RECRUITER FLOW */
+const Recruiter = {
+  init() {
+    RecruiterFlow.candidate = null;
+    Evaluation.pendingImage = null;
+    UTILS.qs('#cName').value = ''; UTILS.qs('#cCandidateId').value = ''; UTILS.qs('#cEmail').value = '';
+    UTILS.qs('#cPhone').value = ''; UTILS.qs('#cPosition').value = ''; UTILS.qs('#cDepartment').value = '';
+    RecruiterFlow.setStep(1);
+  },
+  exit() { UI.showView('view-landing'); }
+};
+
+const RecruiterFlow = {
+  candidate: null,
+  selectedQuestion: null,
+  searchPage: 1,
+
+  setStep(n) {
+    UTILS.qs('#stepCandidate').classList.toggle('hidden', n !== 1);
+    UTILS.qs('#stepQuestion').classList.toggle('hidden', n !== 2);
+    UTILS.qs('#stepProcessing').classList.toggle('hidden', n !== 3);
+    UTILS.qs('#stepResult').classList.toggle('hidden', n !== 4);
+    ['pip1', 'pip2', 'pip3'].forEach((id, i) => UTILS.qs('#' + id).classList.toggle('done', i < n));
+  },
+
+  async confirmCandidate() {
+    const payload = {
+      candidateId: UTILS.qs('#cCandidateId').value.trim(),
+      name: UTILS.qs('#cName').value.trim(),
+      email: UTILS.qs('#cEmail').value.trim(),
+      phone: UTILS.qs('#cPhone').value.trim(),
+      position: UTILS.qs('#cPosition').value.trim(),
+      department: UTILS.qs('#cDepartment').value.trim(),
+      recruiterId: CONFIG.RECRUITER_ID
+    };
+    if (!payload.name || !payload.position) { UI.toast('Candidate name and position are required.', 'error'); return; }
+    try {
+      const candidate = await API.call('createOrGetCandidate', payload);
+      this.candidate = candidate;
+      UTILS.qs('#candidateChip').innerHTML = `<div class="avatar">${UTILS.escapeHtml(candidate.name.slice(0,1))}</div>
+        <div><strong>${UTILS.escapeHtml(candidate.name)}</strong> · ${UTILS.escapeHtml(candidate.candidateId)}<br><span style="color:var(--text-faint);">${UTILS.escapeHtml(candidate.position)}</span></div>`;
+      this.setStep(2);
+      this.searchQuestions(1);
+    } catch (e) {}
+  },
+
+  debouncedSearch: null,
+  async searchQuestions(page) {
+    this.searchPage = page || 1;
+    const search = UTILS.qs('#qSearch').value.trim();
+    const category = UTILS.qs('#qCategoryFilter').value;
+    const list = UTILS.qs('#questionList');
+    list.innerHTML = '<div class="skeleton" style="height:60px;margin-bottom:10px;"></div>'.repeat(3);
+    let data;
+    try { data = await API.call('getQuestions', { search, category, page: this.searchPage, pageSize: 8 }); }
+    catch (e) { return; }
+
+    if (UTILS.qs('#qCategoryFilter').options.length <= 1 && data.categories) {
+      UTILS.qs('#qCategoryFilter').innerHTML = '<option value="">All categories</option>' + data.categories.map(c => `<option>${UTILS.escapeHtml(c)}</option>`).join('');
+    }
+
+    if (!data.items.length) { list.innerHTML = '<div class="empty-state">No matching questions.</div>'; UTILS.qs('#questionPager').innerHTML = ''; return; }
+    list.innerHTML = data.items.map(q => `
+      <div class="question-item" onclick='RecruiterFlow.selectQuestion(${JSON.stringify(q)})'>
+        <div class="qi-cat">${UTILS.escapeHtml(q.category)}${q.difficulty ? ' · ' + UTILS.escapeHtml(q.difficulty) : ''}</div>
+        <div class="qi-text">${UTILS.escapeHtml(q.question)}</div>
+      </div>`).join('');
+
+    const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+    UTILS.qs('#questionPager').innerHTML = `
+      <span>${data.total} question${data.total === 1 ? '' : 's'}</span>
+      <span>
+        <button class="btn btn-outline btn-sm" ${data.page <= 1 ? 'disabled' : ''} onclick="RecruiterFlow.searchQuestions(${data.page - 1})">‹ Prev</button>
+        &nbsp;Page ${data.page} / ${totalPages}&nbsp;
+        <button class="btn btn-outline btn-sm" ${data.page >= totalPages ? 'disabled' : ''} onclick="RecruiterFlow.searchQuestions(${data.page + 1})">Next ›</button>
+      </span>`;
+  },
+
+  selectQuestion(q) {
+    this.selectedQuestion = q;
+    UTILS.qs('#selQuestionCat').textContent = q.category;
+    UTILS.qs('#selQuestionText').textContent = q.question;
+    UTILS.qs('#questionSearchPanel').classList.add('hidden');
+    UTILS.qs('#questionCapturePanel').classList.remove('hidden');
+    UTILS.qs('#captureZoneWrap').classList.remove('hidden');
+    UTILS.qs('#previewWrap').classList.add('hidden');
+    UTILS.qs('#qualityWarning').classList.add('hidden');
+    Evaluation.pendingImage = null;
+    Evaluation.checkFormReady();
+  },
+
+  backToQuestionSearch() {
+    UTILS.qs('#questionCapturePanel').classList.add('hidden');
+    UTILS.qs('#questionSearchPanel').classList.remove('hidden');
+  },
+
+  renderCapturePreview(dataUrl, quality) {
+    UTILS.qs('#previewImg').src = dataUrl;
+    UTILS.qs('#previewWrap').classList.remove('hidden');
+    UTILS.qs('#captureZoneWrap').classList.add('hidden');
+    const warnBox = UTILS.qs('#qualityWarning');
+    if (quality.warnings.length) {
+      warnBox.classList.remove('hidden');
+      warnBox.innerHTML = 'This photo may be hard to evaluate reliably:<ul>' + quality.warnings.map(w => `<li>${UTILS.escapeHtml(w)}</li>`).join('') + '</ul>Consider retaking, or use it anyway if this is the best available shot.';
+    } else {
+      warnBox.classList.add('hidden');
+    }
+    Evaluation.checkFormReady();
+  },
+
+  answerAnother() {
+    this.setStep(2);
+    UTILS.qs('#questionCapturePanel').classList.add('hidden');
+    UTILS.qs('#questionSearchPanel').classList.remove('hidden');
+    this.searchQuestions(1);
+  }
+};
+RecruiterFlow.debouncedSearch = UTILS.debounce(() => RecruiterFlow.searchQuestions(1), 350);
+
+/* ============================================================================ EVALUATION */
+const Evaluation = {
+  pendingImage: null,
+  confirmPhoto() { UI.toast('Photo ready to submit.', 'success'); },
+  checkFormReady() {
+    UTILS.qs('#submitBtn').disabled = !Evaluation.pendingImage;
+  },
+  async submit() {
+    if (!RecruiterFlow.candidate || !RecruiterFlow.selectedQuestion || !this.pendingImage) return;
+    RecruiterFlow.setStep(3);
+    this.animateSteps();
+
+    let imagePath = '';
+    try {
+      imagePath = await FirebaseArchive.uploadAnswerImage(
+        RecruiterFlow.candidate.candidateId, RecruiterFlow.selectedQuestion.id, this.pendingImage.base64
+      );
+    } catch (err) {
+      // Non-fatal: the evaluation itself doesn't depend on the archival copy.
+      handleError('FirebaseArchive.uploadAnswerImage', err);
+      UI.toast('Could not archive the answer image, but evaluation will continue.', 'error');
+    }
+
+    try {
+      const data = await API.call('submitAnswer', {
+        candidateId: RecruiterFlow.candidate.candidateId,
+        questionId: RecruiterFlow.selectedQuestion.id,
+        imageBase64: this.pendingImage.base64,
+        imagePath: imagePath,
+        recruiterId: CONFIG.RECRUITER_ID
+      });
+      this.renderResult(data);
+    } catch (err) {
+      RecruiterFlow.setStep(2);
+    }
+  },
+  animateSteps() {
+    const items = UTILS.qsa('#processingSteps li');
+    items.forEach(li => li.classList.remove('active', 'done'));
+    let i = 0;
+    const tick = () => { if (i > 0) items[i - 1].classList.add('done'); if (i < items.length) { items[i].classList.add('active'); i++; setTimeout(tick, 550); } };
+    tick();
+  },
+  renderResult(data) {
+    RecruiterFlow.setStep(4);
+    UTILS.qs('#scoreRingHost').innerHTML = ScoreRing.render(data.overallScore, 128);
+    UTILS.qs('#resultVerdict').textContent = data.verdict + ' · ' + data.overallScore + '/100';
+    UTILS.qs('#resultSummary').textContent = data.summary || '';
+    const badge = UTILS.qs('#resultStatusBadge');
+    if (data.status === 'LOW_CONFIDENCE') {
+      badge.innerHTML = '<span class="badge badge-amber">Flagged for manual review — handwriting or image quality was uncertain</span>';
+    } else {
+      badge.innerHTML = '<span class="badge badge-green">Evaluation complete</span>';
+    }
+  }
+};
+
+/* ============================================================================ SCORE RING */
+const ScoreRing = {
+  render(score, size) {
+    size = size || 96;
+    const stroke = Math.round(size * 0.09);
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const offset = c * (1 - Math.max(0, Math.min(100, score)) / 100);
+    const color = UTILS.scoreColor(score);
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#EEF0F7" stroke-width="${stroke}"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-linecap="round"
+        stroke-dasharray="${c}" stroke-dashoffset="${c}" transform="rotate(-90 ${size/2} ${size/2})">
+        <animate attributeName="stroke-dashoffset" from="${c}" to="${offset}" dur="0.9s" fill="freeze" calcMode="ease-out"/>
+      </circle>
+      <text x="50%" y="53%" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="800" font-size="${size*0.24}" fill="#211E33">${score}</text>
+    </svg>`;
+  }
+};
+
+/* ============================================================================ AUTH (admin) */
+const Auth = {
+  token: null,
+  async login() {
+    const username = UTILS.qs('#adminUserId').value.trim();
+    const password = UTILS.qs('#adminPassword').value;
+    if (!username || !password) { UI.toast('Enter your User ID and password.', 'error'); return; }
+    const btn = UTILS.qs('#adminLoginBtn'); btn.disabled = true;
+    try {
+      const data = await API.call('loginAdmin', { username, password });
+      this.token = data.token;
+      sessionStorage.setItem('ahs_admin_token', data.token);
+      UI.showView('view-admin');
+      Dashboard.load(); CandidatesView.load(1); QuestionsAdmin.load();
+    } catch (e) {} finally { btn.disabled = false; }
+  },
+  async logout() {
+    const t = this.getToken();
+    if (t) { try { await API.call('logoutAdmin', { token: t }); } catch (e) {} }
+    sessionStorage.removeItem('ahs_admin_token'); this.token = null;
+    UI.showView('view-landing');
+  },
+  getToken() { return this.token || sessionStorage.getItem('ahs_admin_token'); }
+};
+
+/* ============================================================================ ADMIN NAV */
+const AdminNav = {
+  go(tab) {
+    UTILS.qsa('.nav-item[data-tab]').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    ['overview', 'candidates', 'questions'].forEach(t => UTILS.qs('#tab-' + t).classList.toggle('hidden', t !== tab));
+  }
+};
+
+/* ============================================================================ DASHBOARD */
+const Dashboard = {
+  chart: null,
+  async load() {
+    const grid = UTILS.qs('#kpiGrid');
+    grid.innerHTML = Array.from({ length: 6 }).map(() => '<div class="skeleton" style="height:92px;"></div>').join('');
+    let stats;
+    try { stats = await API.call('getDashboardStats', { token: Auth.getToken() }); } catch (e) { return; }
+    const cards = [
+      { label: 'Total Candidates', value: stats.totalCandidates, grad: 'var(--grad-primary)' },
+      { label: 'Total Assessments', value: stats.totalAssessments, grad: 'var(--grad-cyan)' },
+      { label: 'Completed Evaluations', value: stats.completedEvaluations, grad: 'var(--grad-teal)' },
+      { label: 'Average Score', value: stats.averageScore, grad: 'var(--grad-pink)' },
+      { label: 'High Performers (≥80)', value: stats.highPerformers, grad: 'var(--grad-teal)' },
+      { label: 'Requires Review', value: stats.requiresReview, grad: 'var(--grad-amber)' }
+    ];
+    grid.innerHTML = cards.map(c => `<div class="kpi-card" style="background:${c.grad};"><div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div></div>`).join('');
+
+    const ctx = UTILS.qs('#categoryChart');
+    if (this.chart) this.chart.destroy();
+    this.chart = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: (stats.categoryBreakdown||[]).map(b => b.category), datasets: [{ label: 'Avg score', data: (stats.categoryBreakdown||[]).map(b => b.averageScore), backgroundColor: '#7C3AED', borderRadius: 6 }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+    });
+  }
+};
+
+/* ============================================================================ CANDIDATES VIEW */
+const CandidatesView = {
+  page: 1,
+  debouncedLoad: null,
+  async load(page) {
+    this.page = page || this.page;
+    const filters = {
+      search: UTILS.qs('#filterSearch').value.trim(),
+      status: UTILS.qs('#filterStatus').value,
+      sortBy: UTILS.qs('#filterSort').value,
+      page: this.page, pageSize: 15
+    };
+    const tbody = UTILS.qs('#candidatesTableBody');
+    tbody.innerHTML = '<tr><td colspan="7"><div class="skeleton" style="height:20px;"></div></td></tr>';
+    let data;
+    try { data = await API.call('getCandidates', { token: Auth.getToken(), filters }); } catch (e) { return; }
+    if (!data.items.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state">No candidates match your filters yet.</div></td></tr>'; UTILS.qs('#candidatesPager').innerHTML = ''; return; }
+
+    tbody.innerHTML = data.items.map(r => `
+      <tr onclick="DetailModal.open('${r.candidateId}')">
+        <td><strong>${UTILS.escapeHtml(r.name)}</strong><br><span style="color:var(--text-faint);font-size:12px;">${UTILS.escapeHtml(r.candidateId)}</span></td>
+        <td>${UTILS.escapeHtml(r.position || '—')}</td>
+        <td>${r.questionsAttempted}</td>
+        <td><strong style="color:${UTILS.scoreColor(r.averageScore)}">${r.averageScore}</strong></td>
+        <td>${Formatters.aiBadge(r.aiProbability)}</td>
+        <td>${Formatters.verdictBadge(r.verdict)}</td>
+        <td>${UTILS.formatDate(r.assessmentDate)}</td>
+      </tr>`).join('');
+
+    const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
+    UTILS.qs('#candidatesPager').innerHTML = `
+      <button class="btn btn-outline btn-sm" ${data.page <= 1 ? 'disabled' : ''} onclick="CandidatesView.load(${data.page - 1})">‹ Prev</button>
+      <span>Page ${data.page} / ${totalPages} (${data.total} total)</span>
+      <button class="btn btn-outline btn-sm" ${data.page >= totalPages ? 'disabled' : ''} onclick="CandidatesView.load(${data.page + 1})">Next ›</button>`;
+  }
+};
+CandidatesView.debouncedLoad = UTILS.debounce(() => CandidatesView.load(1), 350);
+
+const Formatters = {
+  verdictBadge(v) {
+    const map = { Excellent: 'badge-green', Strong: 'badge-green', Good: 'badge-amber', Average: 'badge-amber', 'Needs Improvement': 'badge-red', Poor: 'badge-red' };
+    return `<span class="badge ${map[v] || 'badge-gray'}">${UTILS.escapeHtml(v || '—')}</span>`;
+  },
+  aiBadge(p) {
+    p = p || 0;
+    const cls = p >= 60 ? 'badge-red' : (p >= 30 ? 'badge-amber' : 'badge-gray');
+    return `<span class="badge ${cls}">${p}%</span>`;
+  },
+  reviewBadge(s) {
+    const map = { AI_APPROVED: 'badge-gray', MANUALLY_REVIEWED: 'badge-green', REQUIRES_REVIEW: 'badge-amber', REJECTED: 'badge-red' };
+    return `<span class="badge ${map[s] || 'badge-gray'}">${UTILS.escapeHtml((s||'').replace(/_/g,' '))}</span>`;
+  }
+};
+
+/* ============================================================================ CANDIDATE REPORT MODAL */
+const DetailModal = {
+  current: null,
+  async open(candidateId) {
+    UTILS.qs('#detailModal').classList.remove('hidden');
+    UTILS.qs('#detailModalBody').innerHTML = '<div class="skeleton" style="height:260px;"></div>';
+    let report;
+    try { report = await API.call('getCandidateReport', { token: Auth.getToken(), candidateId }); } catch (e) { this.close(); return; }
+    this.current = report;
+    UTILS.qs('#detailModalTitle').textContent = report.candidate.name + ' — Candidate Report';
+    UTILS.qs('#detailModalBody').innerHTML = this.renderBody(report);
+    this.loadImages(report.questions);
+  },
+  close() { UTILS.qs('#detailModal').classList.add('hidden'); },
+
+  loadImages(questions) {
+    questions.forEach(async (q, i) => {
+      if (!q.imagePath) return;
+      const host = UTILS.qs('#qimg-' + i);
+      if (!host) return;
+      try {
+        const base64 = await FirebaseArchive.loadAnswerImage(q.imagePath);
+        if (!base64) { host.textContent = 'Image not found.'; return; }
+        host.outerHTML = `<div id="qimg-${i}" class="preview-wrap" style="margin-bottom:14px;"><img src="data:image/jpeg;base64,${base64}" alt="Handwritten answer"/></div>`;
+      } catch (e) {
+        handleError('DetailModal.loadImages', e);
+        host.textContent = 'Could not load the image.';
+      }
+    });
+  },
+
+  renderBody(r) {
+    const c = r.candidate, s = r.scoreSummary;
+    const bars = [['Semantic', s.semantic], ['Concepts', s.concept], ['Accuracy', s.accuracy], ['Completeness', s.completeness], ['Relevance', s.relevance], ['Writing', s.writing]];
+    return `
+      <div class="detail-grid">
+        <div><div class="detail-label">Candidate</div><div class="detail-value">${UTILS.escapeHtml(c.name)} (${UTILS.escapeHtml(c.candidateId)})</div></div>
+        <div><div class="detail-label">Position</div><div class="detail-value">${UTILS.escapeHtml(c.position || '—')}</div></div>
+        <div><div class="detail-label">Date</div><div class="detail-value">${UTILS.formatDate(c.assessmentDate)}</div></div>
+        <div><div class="detail-label">Recruiter</div><div class="detail-value">${UTILS.escapeHtml(c.recruiterId || '—')}</div></div>
+        <div><div class="detail-label">Questions Attempted</div><div class="detail-value">${r.questions.length}</div></div>
+        <div><div class="detail-label">Overall Score</div><div class="detail-value" style="color:${UTILS.scoreColor(r.overallScore)};font-weight:700;">${r.overallScore}/100 — ${UTILS.escapeHtml(r.overallVerdict)}</div></div>
+      </div>
+
+      <div class="score-bars">${bars.map(([label, val]) => `
+        <div class="score-bar-row"><span>${label}</span><div class="score-bar-track"><div class="score-bar-fill" style="width:${val||0}%;"></div></div><span>${val||0}</span></div>`).join('')}</div>
+
+      <h3 style="font-size:16px;margin:22px 0 14px;">Question-wise Evaluation</h3>
+      ${r.questions.map((q, i) => this.renderQuestionCard(q, i)).join('')}
+
+      <button class="btn btn-primary" style="width:auto;padding:12px 22px;margin-top:6px;" onclick="Reports.downloadPdf()">Download PDF Report</button>
+    `;
+  },
+
+  renderQuestionCard(q, i) {
+    return `
+      <div class="qcard">
+        <div class="qcard-head">
+          <div><strong>Q${i+1}.</strong> ${UTILS.escapeHtml(q.question)}</div>
+          <div>${Formatters.reviewBadge(q.reviewStatus)} ${Formatters.aiBadge(q.aiProbability)}</div>
+        </div>
+
+        ${q.imagePath
+          ? `<div id="qimg-${i}" class="answer-block" style="text-align:center;">Loading image…</div>`
+          : `<div class="answer-block" style="text-align:center;color:var(--text-faint);">No archived image on file for this submission.</div>`}
+
+        <div class="detail-label">OCR-Transcribed Answer</div>
+        <div class="answer-block">${UTILS.escapeHtml(q.ocrAnswer || '—')}</div>
+        <div class="detail-label">Reference Answer</div>
+        <div class="answer-block">${UTILS.escapeHtml(q.referenceAnswer || '—')}</div>
+
+        <div class="score-bars">
+          ${[['Semantic', q.scores.semantic], ['Concepts', q.scores.concept], ['Accuracy', q.scores.accuracy], ['Completeness', q.scores.completeness], ['Relevance', q.scores.relevance], ['Writing', q.scores.writing]]
+            .map(([label, val]) => `<div class="score-bar-row"><span>${label}</span><div class="score-bar-track"><div class="score-bar-fill" style="width:${val||0}%;"></div></div><span>${val||0}</span></div>`).join('')}
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin:10px 0;">
+          <span class="badge badge-purple">Score: ${q.finalScore}/100${q.finalScore !== q.originalAiScore ? ' (AI: '+q.originalAiScore+')' : ''}</span>
+          <span class="badge badge-gray">AI likelihood: ${q.aiDetectionStatus}</span>
+          <span class="badge badge-gray">Confidence: ${q.evaluatorConfidence}%</span>
+        </div>
+
+        ${q.strengths && q.strengths.length ? `<div class="detail-label">Strengths</div><div class="concept-tags" style="margin-bottom:12px;">${q.strengths.map(x=>`<span class="badge badge-green">✓ ${UTILS.escapeHtml(x)}</span>`).join('')}</div>` : ''}
+        ${q.missingPoints && q.missingPoints.length ? `<div class="detail-label">Missing Points</div><div class="concept-tags" style="margin-bottom:12px;">${q.missingPoints.map(x=>`<span class="badge badge-amber">⚠ ${UTILS.escapeHtml(x)}</span>`).join('')}</div>` : ''}
+
+        <div class="detail-label">Detailed AI Analysis</div>
+        <div class="answer-block">${UTILS.escapeHtml(q.detailedAnalysis || '—')}</div>
+
+        <div class="review-panel">
+          <div class="detail-label" style="margin-bottom:8px;">Manual Review</div>
+          <div class="review-row">
+            <select id="reviewStatus-${i}">
+              <option value="AI_APPROVED" ${q.reviewStatus==='AI_APPROVED'?'selected':''}>AI Approved</option>
+              <option value="MANUALLY_REVIEWED" ${q.reviewStatus==='MANUALLY_REVIEWED'?'selected':''}>Manually Reviewed</option>
+              <option value="REQUIRES_REVIEW" ${q.reviewStatus==='REQUIRES_REVIEW'?'selected':''}>Requires Review</option>
+              <option value="REJECTED" ${q.reviewStatus==='REJECTED'?'selected':''}>Rejected</option>
+            </select>
+            <input id="reviewScore-${i}" type="number" min="0" max="100" placeholder="Override score (optional)" value="${q.finalScore !== q.originalAiScore ? q.finalScore : ''}" />
+          </div>
+          <textarea id="reviewComments-${i}" placeholder="Admin comments (optional)">${UTILS.escapeHtml(q.adminComments||'')}</textarea>
+          <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="DetailModal.saveReview('${q.evaluationId}', ${i})">Save Review</button>
+        </div>
+      </div>`;
+  },
+
+  async saveReview(evaluationId, i) {
+    const reviewStatus = UTILS.qs('#reviewStatus-' + i).value;
+    const finalScoreRaw = UTILS.qs('#reviewScore-' + i).value;
+    const comments = UTILS.qs('#reviewComments-' + i).value.trim();
+    try {
+      await API.call('updateEvaluationReview', {
+        token: Auth.getToken(), evaluationId, reviewStatus,
+        finalScore: finalScoreRaw === '' ? undefined : Number(finalScoreRaw), comments
+      });
+      UI.toast('Review saved.', 'success');
+      this.open(this.current.candidate.candidateId);
+    } catch (e) {}
+  }
+};
+
+/* ============================================================================ QUESTIONS ADMIN */
+const QuestionsAdmin = {
+  list: [],
+  openAddForm() { UTILS.qs('#addQuestionForm').classList.remove('hidden'); },
+  closeAddForm() { UTILS.qs('#addQuestionForm').classList.add('hidden'); },
+  async load() {
+    let data;
+    try { data = await API.call('getQuestionsAdmin', { token: Auth.getToken() }); } catch (e) { return; }
+    this.list = data;
+    this.render();
+  },
+  render() {
+    const q = UTILS.qs('#qAdminSearch').value.trim().toLowerCase();
+    const filtered = q ? this.list.filter(x => (String(x.Question)+' '+String(x.Category)).toLowerCase().indexOf(q) !== -1) : this.list;
+    const tbody = UTILS.qs('#questionsTableBody');
+    if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No questions match.</div></td></tr>'; return; }
+    tbody.innerHTML = filtered.slice(0, 300).map(qq => `
+      <tr>
+        <td>${UTILS.escapeHtml(String(qq.Question||'').slice(0,60))}${String(qq.Question||'').length>60?'…':''}</td>
+        <td><span class="badge badge-purple">${UTILS.escapeHtml(qq.Category)}</span></td>
+        <td>${qq.Maximum_Score}</td>
+        <td>${qq.Status === 'Active' ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-gray">Inactive</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="QuestionsAdmin.toggle('${qq.Question_ID}', ${qq.Status !== 'Active'})">${qq.Status === 'Active' ? 'Deactivate' : 'Activate'}</button></td>
+      </tr>`).join('');
+  },
+  async save() {
+    const payload = {
+      token: Auth.getToken(),
+      category: UTILS.qs('#qCategory').value.trim(),
+      difficulty: UTILS.qs('#qDifficulty').value.trim(),
+      question: UTILS.qs('#qQuestion').value.trim(),
+      referenceAnswer: UTILS.qs('#qReferenceAnswer').value.trim(),
+      keyConcepts: UTILS.qs('#qKeyConcepts').value.trim(),
+      criticalConcepts: UTILS.qs('#qCriticalConcepts').value.trim(),
+      evaluationCriteria: UTILS.qs('#qEvalCriteria').value.trim(),
+      maxScore: Number(UTILS.qs('#qMaxScore').value) || 100
+    };
+    try {
+      await API.call('addQuestion', payload);
+      UI.toast('Question added.', 'success');
+      this.closeAddForm();
+      ['qCategory','qDifficulty','qQuestion','qReferenceAnswer','qKeyConcepts','qCriticalConcepts','qEvalCriteria'].forEach(id => UTILS.qs('#'+id).value = '');
+      this.load();
+    } catch (e) {}
+  },
+  async toggle(questionId, active) {
+    try { await API.call('toggleQuestionStatus', { token: Auth.getToken(), questionId, active }); this.load(); } catch (e) {}
+  }
+};
+
+/* ============================================================================ REPORTS (PDF via jsPDF) */
+const Reports = {
+  downloadPdf() {
+    const r = DetailModal.current;
+    if (!r) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 40; const pageWidth = doc.internal.pageSize.getWidth();
+    let y = margin;
+
+    function ensureSpace(needed) { if (y + needed > 780) { doc.addPage(); y = margin; } }
+    function section(title, text) {
+      ensureSpace(30);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.text(title, margin, y); y += 16;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      const lines = doc.splitTextToSize(String(text || '—'), pageWidth - margin * 2);
+      ensureSpace(lines.length * 13);
+      doc.text(lines, margin, y); y += lines.length * 13 + 12;
+    }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(16); doc.text(CONFIG.APP_NAME, margin, y); y += 18;
+    doc.setFontSize(12); doc.setTextColor(100); doc.text('Candidate Assessment Report', margin, y); y += 24; doc.setTextColor(0);
+
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    const c = r.candidate;
+    [['Candidate', c.name + ' (' + c.candidateId + ')'], ['Position', c.position || '—'], ['Date', UTILS.formatDate(c.assessmentDate)],
+     ['Overall Score', r.overallScore + '/100'], ['Overall Verdict', r.overallVerdict]].forEach(([label, val]) => {
+      doc.setFont('helvetica', 'bold'); doc.text(label + ':', margin, y);
+      doc.setFont('helvetica', 'normal'); doc.text(String(val), margin + 110, y); y += 15;
+    });
+    y += 6;
+
+    r.questions.forEach((q, i) => {
+      ensureSpace(24);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.text('Question ' + (i + 1), margin, y); y += 18;
+      section('Question', q.question);
+      section('Reference Answer', q.referenceAnswer);
+      section('OCR-Transcribed Answer', q.ocrAnswer);
+
+      ensureSpace(100);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text('Scores', margin, y); y += 15;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+      [['Semantic', q.scores.semantic], ['Concepts', q.scores.concept], ['Accuracy', q.scores.accuracy], ['Completeness', q.scores.completeness],
+       ['Relevance', q.scores.relevance], ['Writing Quality', q.scores.writing], ['Final Score', q.finalScore + '/100'],
+       ['AI Probability', q.aiProbability + '% (' + q.aiDetectionStatus + ')']].forEach(([label, val]) => {
+        ensureSpace(15);
+        doc.text(String(label), margin, y); doc.text(String(val), margin + 200, y); y += 14;
+      });
+      y += 6;
+
+      section('Strengths', (q.strengths||[]).join('; ') || 'None noted');
+      section('Missing Points', (q.missingPoints||[]).join('; ') || 'None noted');
+      section('Detailed Analysis', q.detailedAnalysis);
+      ensureSpace(10);
+      y += 8;
+    });
+
+    doc.save((r.candidate.name || 'candidate').replace(/\s+/g, '_') + '_assessment_report.pdf');
+  }
+};
+
+/* ============================================================================ BOOT */
+(function initializeApp() {
+  // A stored admin token doesn't guarantee it's still valid server-side — the
+  // first failed admin call bounces the user back to login via the API layer.
+})();
+</script>
+</body>
+</html>
