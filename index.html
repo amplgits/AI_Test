@@ -858,7 +858,7 @@ const Auth = {
     try {
       const data = await API.call('loginAdmin', { username, password });
       this.token = data.token;
-      sessionStorage.setItem('ahs_admin_token', data.token);
+      localStorage.setItem('ahs_admin_token', data.token); // localStorage survives closing the browser/app; sessionStorage did not
       UI.showView('view-admin');
       Dashboard.load(); CandidatesView.load(1); QuestionsAdmin.load();
     } catch (e) {} finally { btn.disabled = false; }
@@ -866,10 +866,10 @@ const Auth = {
   async logout() {
     const t = this.getToken();
     if (t) { try { await API.call('logoutAdmin', { token: t }); } catch (e) {} }
-    sessionStorage.removeItem('ahs_admin_token'); this.token = null;
+    localStorage.removeItem('ahs_admin_token'); this.token = null;
     UI.showView('view-landing');
   },
-  getToken() { return this.token || sessionStorage.getItem('ahs_admin_token'); }
+  getToken() { return this.token || localStorage.getItem('ahs_admin_token'); }
 };
 
 /* ============================================================================ ADMIN NAV */
@@ -1253,9 +1253,22 @@ const PWA = {
   }
 };
 PWA.init();
-(function initializeApp() {
-  // A stored admin token doesn't guarantee it's still valid server-side — the
-  // first failed admin call bounces the user back to login via the API layer.
+(async function initializeApp() {
+  // Auto-resume an admin session on reload/relaunch if a token is stored.
+  // Validate it against the backend first — if it was logged out or deleted
+  // there, fall back to the landing page instead of showing a broken dashboard.
+  const existingToken = Auth.getToken();
+  if (!existingToken) return;
+  Auth.token = existingToken;
+  try {
+    await API.call('getDashboardStats', { token: existingToken });
+  } catch (e) {
+    localStorage.removeItem('ahs_admin_token');
+    Auth.token = null;
+    return;
+  }
+  UI.showView('view-admin');
+  Dashboard.load(); CandidatesView.load(1); QuestionsAdmin.load();
 })();
 </script>
 </body>
